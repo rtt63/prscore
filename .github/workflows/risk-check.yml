@@ -19,16 +19,22 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { data: pr } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number
-            });
-            core.setOutput('sha', pr.head.sha);
-            core.setOutput('base', pr.base.ref);
-            core.setOutput('head', pr.head.ref);
+            try {
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number
+              });
+              core.setOutput('sha', pr.head.sha);
+              core.setOutput('base', pr.base.ref);
+              core.setOutput('head', pr.head.ref);
+            } catch (error) {
+              core.setFailed(`Failed to get PR details: ${error.message}`);
+              throw error;
+            }
 
       - name: Set pending status
+        if: steps.pr.outputs.sha != ''
         uses: actions/github-script@v7
         with:
           script: |
@@ -42,44 +48,66 @@ jobs:
             });
 
       - uses: actions/checkout@v4
+        if: steps.pr.outputs.sha != ''
         with:
           fetch-depth: 0
           ref: ${{ steps.pr.outputs.sha }}
 
       - uses: actions/setup-node@v4
+        if: steps.pr.outputs.sha != ''
         with:
           node-version: "20"
 
       - name: Install amisafe
+        if: steps.pr.outputs.sha != ''
         run: npm install -g amisafe
 
       - name: Run risk analysis
+        if: steps.pr.outputs.sha != ''
         id: analysis
         continue-on-error: true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          set -o pipefail
           amisafe \
             --base origin/${{ steps.pr.outputs.base }} \
             --head origin/${{ steps.pr.outputs.head }} \
-            --github | tee analysis.txt
+            --github 2>&1 | tee analysis.txt || echo "ANALYSIS_FAILED" >> analysis.txt
 
       - name: Update status
-        if: always()
+        if: always() && steps.pr.outputs.sha != ''
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const analysisOutput = fs.existsSync('analysis.txt') 
-              ? fs.readFileSync('analysis.txt', 'utf8') 
-              : 'No output';
 
-            const state = '${{ steps.analysis.outcome }}' === 'success' 
-              ? 'success' 
-              : 'failure';
+            let analysisOutput = 'Analysis did not run';
+            let state = 'error';
+            let description = 'Analysis failed to complete';
 
-            const description = analysisOutput.split('\n')[0].substring(0, 140) || 
-              (state === 'success' ? 'Analysis passed' : 'Analysis failed');
+            try {
+              if (fs.existsSync('analysis.txt')) {
+                analysisOutput = fs.readFileSync('analysis.txt', 'utf8') || 'No output';
+                
+                if ('${{ steps.analysis.outcome }}' === 'success') {
+                  state = 'success';
+                  const lines = analysisOutput.split('\n').filter(line => line.trim());
+                  description = lines.length > 0 
+                    ? lines[0].substring(0, 140) 
+                    : 'Analysis passed';
+                } else {
+                  state = 'failure';
+                  const lines = analysisOutput.split('\n').filter(line => line.trim());
+                  description = lines.length > 0 
+                    ? lines[0].substring(0, 140) 
+                    : 'Analysis failed';
+                }
+              }
+            } catch (error) {
+              core.warning(`Error reading analysis output: ${error.message}`);
+              description = 'Error processing analysis results';
+            }
 
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
