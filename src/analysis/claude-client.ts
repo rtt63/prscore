@@ -1,5 +1,3 @@
-// src/analysis/claude-client.ts
-
 import Anthropic from "@anthropic-ai/sdk";
 import { AnalysisDepth } from "./size-analyzer";
 import { FileDiff } from "../git/diff-parser";

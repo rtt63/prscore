@@ -87,26 +87,19 @@ function getCommitHistory(base: string, head: string): CommitInfo[] {
   const logOutput = execSync(
     `git log ${base}..${head} --pretty=format:"%H|%an|%ad|%s" --date=iso`,
     { encoding: "utf-8" },
-  );
+  ).trim();
 
-  if (!logOutput.trim()) {
+  if (!logOutput) {
     return [];
   }
 
-  return logOutput
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => {
-      const parts = line.split("|");
-      const sha = parts[0] || "";
-      const author = parts[1] || "";
-      const dateStr = parts[2] || "";
-      const message = parts[3] || "";
-      return {
-        sha,
-        author,
-        date: new Date(dateStr),
-        message,
-      };
-    });
+  return logOutput.split("\n").map((line) => {
+    const [sha, author, dateStr, message] = line.split("|");
+    return {
+      sha: sha || "",
+      author: author || "",
+      date: new Date(dateStr || ""),
+      message: message || "",
+    };
+  });
 }

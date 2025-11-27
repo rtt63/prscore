@@ -1,5 +1,3 @@
-// src/analysis/risk-scorer.ts
-
 import { PRDiff } from "../git/diff-parser";
 import { ClaudeAnalysis } from "./claude-client";
 import { SizeAnalysis } from "./size-analyzer";
@@ -90,14 +88,15 @@ export function calculateRiskScore(
       ? 0
       : Math.min(10, 5.0 + Math.min(3, configFiles.length * 0.8));
 
-  const timeSpanScore =
-    timeSpanHours > 72
-      ? 4.0
-      : timeSpanHours > 48
-        ? 3.0
-        : timeSpanHours > 24
-          ? 1.5
-          : 0;
+  function getTimeSpanScore() {
+    if (timeSpanHours > 72) return 4.0;
+    if (timeSpanHours > 48) return 3.0;
+    if (timeSpanHours > 24) return 1.5;
+
+    return 0;
+  }
+
+  const timeSpanScore = getTimeSpanScore();
 
   const totalWeight =
     WEIGHTS.PR_SIZE +
