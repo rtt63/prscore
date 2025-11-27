@@ -60,7 +60,6 @@ export async function analyzeWithClaude(
   if (content.type !== "text") {
     throw new Error("Unexpected response type from Claude");
   }
-
   return parseResponse(content.text);
 }
 
