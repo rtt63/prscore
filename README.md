@@ -1,6 +1,6 @@
 # amisafe
 
-AI-powered deploy risk analyzer for Pull Requests. Automatically detects breaking changes, fatal error risks, and deployment dangers before merge.
+AI-powered deploy risk analyzer for Pull Requests. Get the score of how potentially dangerous might be to merge this.
 
 ## Features
 
