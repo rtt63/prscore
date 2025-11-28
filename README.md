@@ -38,7 +38,7 @@ prscore --base main --head feature-branch
 
 ### GitHub Action Setup
 
-[Check our setup](https://github.com/rtt63/prscore/blob/main/.github/workflows/publish.yml)
+[Check our setup](https://github.com/rtt63/prscore/blob/main/.github/workflows/risk-check.yml)
 
 1. Add `ANTHROPIC_API_KEY` to repository secrets
 2. Comment `/prscore` on any PR to analyze scoring
