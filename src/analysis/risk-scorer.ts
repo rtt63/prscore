@@ -25,11 +25,11 @@ export interface RiskScore {
 
 const WEIGHTS = {
   BREAKING_CHANGES: 10,
+  PR_SIZE: 10,
   FATAL_ERRORS: 9,
-  PR_SIZE: 8,
   MIGRATIONS: 7,
-  CONFIG_CHANGES: 6,
-  TIME_SPAN: 2,
+  CONFIG_CHANGES: 5,
+  TIME_SPAN: 1,
 };
 
 export function calculateRiskScore(
@@ -157,14 +157,14 @@ export function calculateRiskScore(
     recommendations.push("Update deployment runbook");
   }
 
-  if (timeSpanHours > 48) {
+  if (timeSpanHours > 24 * 7) {
     recommendations.push(
       "PR developed over multiple days - extra careful review needed",
     );
     recommendations.push("Verify no merge conflicts or stale code");
   }
 
-  if (overall >= 7.5) {
+  if (overall >= 7) {
     recommendations.push("⚠️ CRITICAL RISK: Require multiple senior reviewers");
     recommendations.push("⚠️ Schedule extended testing period before merge");
   }
