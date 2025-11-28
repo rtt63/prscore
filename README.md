@@ -1,21 +1,29 @@
 # prscore
 
-AI-powered deploy risk analyzer for Pull Requests. Get the score of how potentially dangerous might be to merge this.
+Use AI to detect how potentially dangerous to is merge this PR.
 
-## Features
+Examples
 
-- 🔍 **Breaking Change Detection** - API changes, removed exports, schema modifications
-- 💥 **Fatal Error Analysis** - Runtime crashes, white screens, data corruption risks
-- 📏 **PR Size Assessment** - Automatic risk scoring based on change size
-- 🗄️ **Migration Detection** - Database schema change analysis
-- ⚙️ **Config Change Tracking** - Environment and infrastructure change detection
-- 🤖 **AI-Powered** - Uses Claude AI for deep code analysis
-- 🎯 **GitHub Integration** - Automated PR checks and annotations
+- Big PR
+- Breaking changes or changes in specific files
+- Too much time between first and last commit, which might leed to lost focus
+- Incomplete error handle
 
 ## Installation
 
+Required Claude API account
+
+1. Add `ANTHROPIC_API_KEY="your-key"` to secrets
+2.
+
 ```bash
-npm install -g prscore
+npm install --save-dev prscore
+```
+
+3. To create your custom config locally
+
+```bash
+npm install -g prscore && prscore init
 ```
 
 ## Usage
@@ -24,138 +32,16 @@ npm install -g prscore
 
 ```bash
 # Analyze a PR locally
-prscore --base main --head feature-branch
-
-# With API key
 export ANTHROPIC_API_KEY="your-key"
 prscore --base main --head feature-branch
 ```
 
-### GitHub Action
+### GitHub Action Setup
 
-Add to `.github/workflows/risk-check.yml`:
-
-```yaml
-name: Deploy Risk Check
-
-on:
-  pull_request:
-    types: [opened, synchronize]
-  issue_comment:
-    types: [created]
-
-jobs:
-  risk-analysis:
-    if: |
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'issue_comment' && 
-       github.event.issue.pull_request &&
-       contains(github.event.comment.body, '/risk-check'))
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install prscore
-        run: npm install -g prscore
-
-      - name: Get PR info
-        id: pr
-        uses: actions/github-script@v7
-        with:
-          script: |
-            let pr;
-            if (context.eventName === 'pull_request') {
-              pr = context.payload.pull_request;
-            } else {
-              const { data } = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: context.issue.number
-              });
-              pr = data;
-            }
-
-            core.setOutput('base', pr.base.ref);
-            core.setOutput('head', pr.head.sha);
-
-      - name: Run analysis
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          prscore \
-            --base origin/${{ steps.pr.outputs.base }} \
-            --head ${{ steps.pr.outputs.head }} \
-            --github
-```
-
-**Setup:**
+[Check our setup](https://github.com/rtt63/prscore/blob/main/.github/workflows/risk-check.yml)
 
 1. Add `ANTHROPIC_API_KEY` to repository secrets
-2. The action runs automatically on every PR
-3. Comment `/risk-check` on any PR to re-analyze
-
-## Configuration
-
-### API Key
-
-Set your Anthropic API key:
-
-```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
-```
-
-Or pass it directly:
-
-```bash
-prscore --api-key sk-ant-... --base main --head feature
-```
-
-### Customizing Analysis Prompts
-
-Create a configuration file to customize what prscore looks for in your PRs:
-
-```bash
-# Create .prscorerc.json with default prompts
-prscore init
-
-# Override existing config
-prscore init --force
-```
-
-This creates `.prscorerc.json` in your project root with customizable focus points for each analysis depth:
-
-```json
-{
-  "prompts": {
-    "superficial": [
-      "Database migrations",
-      "API contract changes",
-      "Critical config changes",
-      "Obvious fatal error patterns"
-    ],
-    "simplified": [...],
-    "full": [...],
-    "detailed": [...]
-  }
-}
-```
-
-**Analysis depths** (automatically selected based on PR size):
-
-- `superficial` - Very large PRs (>2000 lines)
-- `simplified` - Large PRs (1000-2000 lines)
-- `full` - Medium PRs (200-1000 lines)
-- `detailed` - Small PRs (<200 lines)
-
-Edit the focus points to match your team's priorities. For example, add "GraphQL schema changes" or "React component prop changes" to catch framework-specific risks.
+2. Comment `/prscore` on any PR to analyze scoring
 
 ## Risk Scoring
 
@@ -199,24 +85,9 @@ Recommendations:
   • Consider splitting this PR into smaller changes
 ```
 
-## Development
-
-```bash
-# Clone repo
-git clone https://github.com/yourusername/prscore
-cd prscore
-
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# Test locally
-npm run dev -- --base main --head feature-branch
-```
-
 ## Cost
+
+**Spend it wisely**
 
 Uses Claude Sonnet 4.5 API. Average cost per PR analysis:
 
