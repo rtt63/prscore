@@ -2,7 +2,6 @@ import Anthropic from "@anthropic-ai/sdk";
 import { AnalysisDepth } from "./size-analyzer";
 import { FileDiff } from "../git/diff-parser";
 import { loadPromptsConfig } from "../config/config-loader";
-import { buildPromptFromTemplate } from "../config/prompts-config";
 
 export interface ClaudeAnalysis {
   overallRisk: number;
@@ -75,14 +74,204 @@ function buildPrompt(
 
   switch (depth) {
     case AnalysisDepth.SUPERFICIAL:
-      return buildPromptFromTemplate(config.superficial, diffContent, totalLines);
+      return buildSuperficialPrompt(diffContent, totalLines, config.superficial);
     case AnalysisDepth.SIMPLIFIED:
-      return buildPromptFromTemplate(config.simplified, diffContent, totalLines);
+      return buildSimplifiedPrompt(diffContent, totalLines, config.simplified);
     case AnalysisDepth.FULL:
-      return buildPromptFromTemplate(config.full, diffContent, totalLines);
+      return buildFullPrompt(diffContent, totalLines, config.full);
     case AnalysisDepth.DETAILED:
-      return buildPromptFromTemplate(config.detailed, diffContent, totalLines);
+      return buildDetailedPrompt(diffContent, totalLines, config.detailed);
   }
+}
+
+function buildSuperficialPrompt(
+  diff: string,
+  lines: number,
+  focusPoints: string[],
+): string {
+  return `You are analyzing a very large Pull Request (${lines} lines changed).
+Provide a quick high-level risk assessment.
+
+DIFF:
+${diff}
+
+Respond with JSON only:
+{
+  "overallRisk": <number 0-10>,
+  "breakingChanges": [
+    {
+      "file": "path/to/file",
+      "type": "api|schema|export|contract",
+      "description": "brief description",
+      "severity": <number 0-10>
+    }
+  ],
+  "fatalErrorRisks": [
+    {
+      "file": "path/to/file",
+      "type": "runtime_crash|white_screen|data_loss|infinite_loop",
+      "description": "brief description",
+      "severity": <number 0-10>
+    }
+  ],
+  "findings": [],
+  "summary": "Brief 1-2 sentence summary of main risks"
+}
+
+Focus ONLY on:
+${focusPoints.map((p, i) => `${i + 1}. ${p}`).join("\n")}
+
+Keep response concise. Respond ONLY with valid JSON, no markdown.`;
+}
+
+function buildSimplifiedPrompt(
+  diff: string,
+  lines: number,
+  focusPoints: string[],
+): string {
+  return `You are analyzing a large Pull Request (${lines} lines changed).
+Focus on major risks only.
+
+DIFF:
+${diff}
+
+Respond with JSON only:
+{
+  "overallRisk": <number 0-10>,
+  "breakingChanges": [
+    {
+      "file": "path/to/file",
+      "line": <number optional>,
+      "type": "api|schema|export|contract",
+      "description": "what breaks and why",
+      "severity": <number 0-10>
+    }
+  ],
+  "fatalErrorRisks": [
+    {
+      "file": "path/to/file",
+      "line": <number optional>,
+      "type": "runtime_crash|white_screen|data_loss|infinite_loop",
+      "description": "what could cause fatal error",
+      "severity": <number 0-10>
+    }
+  ],
+  "findings": [
+    {
+      "file": "path/to/file",
+      "category": "migration|config|complexity",
+      "description": "finding description",
+      "severity": <number 0-10>
+    }
+  ],
+  "summary": "2-3 sentence summary highlighting top 3 risks"
+}
+
+Analyze for:
+${focusPoints.map((p, i) => `${i + 1}. ${p}`).join("\n")}
+
+Rank findings by severity. Respond ONLY with valid JSON, no markdown.`;
+}
+
+function buildFullPrompt(
+  diff: string,
+  lines: number,
+  focusPoints: string[],
+): string {
+  return `You are analyzing a Pull Request (${lines} lines changed).
+Provide comprehensive risk analysis.
+
+DIFF:
+${diff}
+
+Respond with JSON only:
+{
+  "overallRisk": <number 0-10>,
+  "breakingChanges": [
+    {
+      "file": "path/to/file",
+      "line": <number optional>,
+      "type": "api|schema|export|contract",
+      "description": "detailed description of breaking change",
+      "severity": <number 0-10>
+    }
+  ],
+  "fatalErrorRisks": [
+    {
+      "file": "path/to/file",
+      "line": <number optional>,
+      "type": "runtime_crash|white_screen|data_loss|infinite_loop",
+      "description": "detailed description of potential fatal error",
+      "severity": <number 0-10>
+    }
+  ],
+  "findings": [
+    {
+      "file": "path/to/file",
+      "category": "migration|config|complexity|security|performance",
+      "description": "finding description",
+      "severity": <number 0-10>
+    }
+  ],
+  "summary": "Comprehensive summary of all major risks"
+}
+
+Analyze for:
+${focusPoints.map((p, i) => `${i + 1}. ${p}`).join("\n")}
+
+Provide specific line numbers when possible. Rank all findings by severity.
+Respond ONLY with valid JSON, no markdown.`;
+}
+
+function buildDetailedPrompt(
+  diff: string,
+  lines: number,
+  focusPoints: string[],
+): string {
+  return `You are analyzing a small Pull Request (${lines} lines changed).
+Provide deep, line-by-line risk analysis.
+
+DIFF:
+${diff}
+
+Respond with JSON only:
+{
+  "overallRisk": <number 0-10>,
+  "breakingChanges": [
+    {
+      "file": "path/to/file",
+      "line": <number>,
+      "type": "api|schema|export|contract",
+      "description": "very detailed description with context",
+      "severity": <number 0-10>
+    }
+  ],
+  "fatalErrorRisks": [
+    {
+      "file": "path/to/file",
+      "line": <number>,
+      "type": "runtime_crash|white_screen|data_loss|infinite_loop",
+      "description": "detailed description with reproduction scenario",
+      "severity": <number 0-10>
+    }
+  ],
+  "findings": [
+    {
+      "file": "path/to/file",
+      "category": "migration|config|complexity|security|performance|testing|edge_case",
+      "description": "detailed finding with recommendations",
+      "severity": <number 0-10>
+    }
+  ],
+  "summary": "Detailed summary with recommendations"
+}
+
+Perform deep analysis:
+${focusPoints.map((p, i) => `${i + 1}. ${p}`).join("\n")}
+
+Be extremely thorough. Include line numbers for every finding.
+Provide actionable recommendations for each risk.
+Respond ONLY with valid JSON, no markdown.`;
 }
 
 function formatDiff(files: FileDiff[]): string {
