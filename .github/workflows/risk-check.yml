@@ -58,9 +58,9 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install amisafe
+      - name: Install prscore
         if: steps.pr.outputs.sha != ''
-        run: npm install -g amisafe
+        run: npm install -g prscore
 
       - name: Run risk analysis
         if: steps.pr.outputs.sha != ''
@@ -70,7 +70,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           set -o pipefail
-          amisafe \
+          prscore \
             --base origin/${{ steps.pr.outputs.base }} \
             --head origin/${{ steps.pr.outputs.head }} \
             --github 2>&1 | tee analysis.txt || echo "ANALYSIS_FAILED" >> analysis.txt
