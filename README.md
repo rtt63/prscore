@@ -43,6 +43,26 @@ prscore --base main --head feature-branch
 1. Add `ANTHROPIC_API_KEY` to repository secrets
 2. Comment `/prscore` on any PR to analyze scoring
 
+### Access Control
+
+By default, only users with **write, maintain, or admin** permissions can trigger `/prscore` analysis. This prevents unauthorized token usage.
+
+**To add additional trusted users:**
+
+1. Go to your repository Settings → Secrets and variables → Actions → Variables
+2. Create a new repository variable named `PRSCORE_TRUSTED_USERS`
+3. Set the value to a comma-separated list of GitHub usernames:
+   ```
+   user1,user2,user3
+   ```
+
+**Example:**
+```
+PRSCORE_TRUSTED_USERS: alice,bob,charlie
+```
+
+When an unauthorized user tries to run `/prscore`, they'll receive a comment explaining the restriction.
+
 ## Risk Scoring
 
 prscore calculates an overall risk score (0-10) based on:
