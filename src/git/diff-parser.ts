@@ -23,6 +23,33 @@ export interface CommitInfo {
   message: string;
 }
 
+/**
+ * Check if a file is an auto-generated lock file
+ * Lock files should not count towards PR size as they are auto-generated
+ */
+function isLockFile(path: string): boolean {
+  const lockFilePatterns = [
+    /\/yarn\.lock$/i,
+    /\/package-lock\.json$/i,
+    /\/pnpm-lock\.yaml$/i,
+    /\/Cargo\.lock$/i,
+    /\/go\.sum$/i,
+    /\/Podfile\.lock$/i,
+    /\/Gemfile\.lock$/i,
+    /\/composer\.lock$/i,
+    /\/poetry\.lock$/i,
+    /\/Pipfile\.lock$/i,
+    /\/npm-shrinkwrap\.json$/i,
+    /\/gradle\.lockfile$/i,
+    /\/flake\.lock$/i,
+    /\/mix\.lock$/i,
+    /\/packages\.lock\.json$/i,
+    /\/paket\.lock$/i,
+    /\/pubspec\.lock$/i,
+  ];
+  return lockFilePatterns.some((pattern) => pattern.test(path));
+}
+
 export function getPRDiff(base: string, head: string): PRDiff {
   const statsOutput = execSync(`git diff --numstat ${base}...${head}`, {
     encoding: "utf-8",
@@ -56,8 +83,11 @@ export function getPRDiff(base: string, head: string): PRDiff {
     const additionsCount = parseInt(additions, 10);
     const deletionsCount = parseInt(deletions, 10);
 
-    totalAdditions += additionsCount;
-    totalDeletions += deletionsCount;
+    // Don't count lock files in PR size calculation
+    if (!isLockFile(path)) {
+      totalAdditions += additionsCount;
+      totalDeletions += deletionsCount;
+    }
 
     const fileDiff = execSync(`git diff ${base}...${head} -- "${path}"`, {
       encoding: "utf-8",
