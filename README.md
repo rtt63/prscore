@@ -1,4 +1,4 @@
-# amisafe
+# prscore
 
 AI-powered deploy risk analyzer for Pull Requests. Get the score of how potentially dangerous might be to merge this.
 
@@ -15,7 +15,7 @@ AI-powered deploy risk analyzer for Pull Requests. Get the score of how potentia
 ## Installation
 
 ```bash
-npm install -g amisafe
+npm install -g prscore
 ```
 
 ## Usage
@@ -24,11 +24,11 @@ npm install -g amisafe
 
 ```bash
 # Analyze a PR locally
-amisafe --base main --head feature-branch
+prscore --base main --head feature-branch
 
 # With API key
 export ANTHROPIC_API_KEY="your-key"
-amisafe --base main --head feature-branch
+prscore --base main --head feature-branch
 ```
 
 ### GitHub Action
@@ -63,8 +63,8 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install amisafe
-        run: npm install -g amisafe
+      - name: Install prscore
+        run: npm install -g prscore
 
       - name: Get PR info
         id: pr
@@ -90,7 +90,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          amisafe \
+          prscore \
             --base origin/${{ steps.pr.outputs.base }} \
             --head ${{ steps.pr.outputs.head }} \
             --github
@@ -115,22 +115,22 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 Or pass it directly:
 
 ```bash
-amisafe --api-key sk-ant-... --base main --head feature
+prscore --api-key sk-ant-... --base main --head feature
 ```
 
 ### Customizing Analysis Prompts
 
-Create a configuration file to customize what amisafe looks for in your PRs:
+Create a configuration file to customize what prscore looks for in your PRs:
 
 ```bash
-# Create .amisaferc.json with default prompts
-amisafe init
+# Create .prscorerc.json with default prompts
+prscore init
 
 # Override existing config
-amisafe init --force
+prscore init --force
 ```
 
-This creates `.amisaferc.json` in your project root with customizable focus points for each analysis depth:
+This creates `.prscorerc.json` in your project root with customizable focus points for each analysis depth:
 
 ```json
 {
@@ -149,6 +149,7 @@ This creates `.amisaferc.json` in your project root with customizable focus poin
 ```
 
 **Analysis depths** (automatically selected based on PR size):
+
 - `superficial` - Very large PRs (>2000 lines)
 - `simplified` - Large PRs (1000-2000 lines)
 - `full` - Medium PRs (200-1000 lines)
@@ -158,7 +159,7 @@ Edit the focus points to match your team's priorities. For example, add "GraphQL
 
 ## Risk Scoring
 
-amisafe calculates an overall risk score (0-10) based on:
+prscore calculates an overall risk score (0-10) based on:
 
 | Factor           | Weight | What it checks                                     |
 | ---------------- | ------ | -------------------------------------------------- |
@@ -202,8 +203,8 @@ Recommendations:
 
 ```bash
 # Clone repo
-git clone https://github.com/yourusername/amisafe
-cd amisafe
+git clone https://github.com/yourusername/prscore
+cd prscore
 
 # Install dependencies
 npm install

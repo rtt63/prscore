@@ -9,14 +9,14 @@ import { initConfig } from "./commands/init";
 const program = new Command();
 
 program
-  .name("amisafe")
+  .name("prscore")
   .description("AI-powered deploy risk analyzer")
   .version("0.1.0");
 
 // Init command
 program
   .command("init")
-  .description("Create .amisaferc.json config file with default prompts")
+  .description("Create .prscorerc.json config file with default prompts")
   .option("-f, --force", "Overwrite existing config file")
   .action((options) => {
     initConfig(options.force);

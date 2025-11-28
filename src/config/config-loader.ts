@@ -3,7 +3,7 @@ import path from "path";
 import { PromptsConfig } from "./prompts-config";
 import { getDefaultPromptsConfig } from "./default-prompts";
 
-const CONFIG_FILENAME = ".amisaferc.json";
+const CONFIG_FILENAME = ".prscorerc.json";
 
 export function loadPromptsConfig(cwd: string = process.cwd()): PromptsConfig {
   const configPath = findConfigFile(cwd);

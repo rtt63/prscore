@@ -1,11 +1,11 @@
 {
-  "name": "amisafe",
+  "name": "prscore",
   "version": "0.2.0",
   "description": "AI-powered deploy risk analyzer for Pull Requests",
   "main": "dist/analyzer.js",
   "types": "dist/analyzer.d.ts",
   "bin": {
-    "amisafe": "dist/cli.js"
+    "prscore": "dist/cli.js"
   },
   "files": [
     "dist/",
@@ -34,12 +34,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/amisafe"
+    "url": "https://github.com/yourusername/prscore"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/amisafe/issues"
+    "url": "https://github.com/yourusername/prscore/issues"
   },
-  "homepage": "https://github.com/yourusername/amisafe#readme",
+  "homepage": "https://github.com/yourusername/prscore#readme",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
     "commander": "^12.0.0"

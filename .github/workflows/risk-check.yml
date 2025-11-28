@@ -7,7 +7,7 @@ jobs:
   risk-analysis:
     if: |
       github.event.issue.pull_request &&
-      contains(github.event.comment.body, '/amisafe')
+      contains(github.event.comment.body, '/prscore')
     runs-on: ubuntu-latest
     permissions:
       contents: read
