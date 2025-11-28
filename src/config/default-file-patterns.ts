@@ -1,71 +1,25 @@
-{
-  "prompts": {
-    "superficial": [
-      "Database migrations",
-      "API contract changes",
-      "Critical config changes",
-      "Obvious fatal error patterns"
-    ],
-    "simplified": [
-      "BREAKING CHANGES: API changes, removed exports, schema modifications, contract changes",
-      "FATAL ERROR POTENTIAL: Runtime crashes, null pointer exceptions, white screens, data corruption",
-      "Database migrations and their impact",
-      "Critical configuration changes"
-    ],
-    "full": [
-      "BREAKING CHANGES (highest priority):",
-      "  - API endpoint changes",
-      "  - Function signature modifications in public APIs",
-      "  - Database schema changes",
-      "  - Removed or renamed exports",
-      "  - Contract/interface changes",
-      "  - Environment variable changes",
-      "FATAL ERROR POTENTIAL (second priority):",
-      "  - Uncaught exceptions that could crash the app",
-      "  - Null/undefined reference errors",
-      "  - Frontend errors that could cause white screen",
-      "  - Backend errors that could crash server",
-      "  - Infinite loops or memory leaks",
-      "  - Data corruption risks",
-      "Database migrations impact",
-      "Configuration changes",
-      "Code complexity increase",
-      "Security concerns",
-      "Performance implications"
-    ],
-    "detailed": [
-      "BREAKING CHANGES (line-by-line):",
-      "  - Every API change with before/after comparison",
-      "  - Every export removal or modification",
-      "  - Every schema change with migration impact",
-      "  - Every contract/interface change with affected consumers",
-      "  - Every env variable change with deployment impact",
-      "FATAL ERROR POTENTIAL (scenario-based):",
-      "  - Every potential runtime crash with reproduction steps",
-      "  - Every null/undefined risk with edge cases",
-      "  - Every frontend error that could white screen",
-      "  - Every async error that could hang the app",
-      "  - Every data corruption scenario",
-      "Edge cases not covered by tests",
-      "Performance regressions",
-      "Security vulnerabilities",
-      "Test coverage gaps",
-      "Integration points affected",
-      "Deployment risks"
-    ]
-  },
-  "filePatterns": {
-    "critical": [
+import { FilePatternsConfig } from "./file-patterns-config";
+
+export function getDefaultFilePatternsConfig(): FilePatternsConfig {
+  return {
+    critical: [
+      // Database & Migrations
       "\\.sql$:i",
       "migrations?/:i",
       "schema\\.(ts|js|sql)$:i",
       "database/:i",
+
+      // Configuration
       "(^|/)config\\.(ts|js|json|ya?ml)$:i",
       "\\.env:i",
+
+      // Infrastructure
       "docker:i",
       "\\.tf$:i",
       "k8s|kubernetes:i",
       "nginx\\.conf:i",
+
+      // Dependencies & Lock files
       "package\\.json$:",
       "package-lock\\.json$:",
       "yarn\\.lock$:",
@@ -79,6 +33,8 @@
       "settings\\.gradle(\\.kts)?$:",
       "Gemfile(\\.lock)?$:",
       "composer\\.(json|lock)$:",
+
+      // Security & Auth
       "auth|authentication:i",
       "middleware.*auth:i",
       "security/:i",
@@ -87,6 +43,8 @@
       "jwt:i",
       "oauth:i",
       "session:i",
+
+      // Framework configs
       "next\\.config\\.(js|ts|mjs)$:i",
       "remix\\.config\\.(js|ts)$:i",
       "svelte\\.config\\.(js|ts)$:i",
@@ -97,6 +55,8 @@
       "angular\\.json$:i",
       "vue\\.config\\.(js|ts)$:i",
       "nuxt\\.config\\.(js|ts)$:i",
+
+      // Server & Core application
       "server\\.(ts|js|rs|cpp)$:i",
       "(^|/)main\\.(ts|js|rs|cpp|swift|kt)$:i",
       "/src/index\\.(ts|js)$:i",
@@ -108,18 +68,26 @@
       "/core/:i",
       "/kernel/:i",
       "/engine/:i",
+
+      // Networking & Security middleware
       "proxy:i",
       "cors:i",
       "helmet:i",
       "rate-?limit:i",
       "csp\\.:i",
+
+      // Rust critical files
       "/lib\\.rs$:",
       "/main\\.rs$:",
       "/mod\\.rs$:",
+
+      // C++ critical files
       "\\.(h|hpp|hxx)$:i",
       "CMakeLists\\.txt$:i",
       "Makefile$:i",
       "\\.cmake$:i",
+
+      // Swift/iOS critical
       "AppDelegate\\.swift$:i",
       "SceneDelegate\\.swift$:i",
       "Info\\.plist$:i",
@@ -127,11 +95,15 @@
       "\\.xcworkspace/:i",
       "\\.pbxproj$:",
       "Entitlements\\.plist$:i",
+
+      // Kotlin/Android critical
       "AndroidManifest\\.xml$:i",
       "MainActivity\\.(kt|java)$:i",
       "Application\\.(kt|java)$:i",
       "proguard-rules\\.pro$:i",
       "gradle\\.properties$:i",
+
+      // State management
       "/store/:i",
       "redux:i",
       "zustand:i",
@@ -140,21 +112,28 @@
       "mobx:i",
       "/state/:i",
       "/context/:i",
+
+      // Error handling & Monitoring
       "error-?handler:i",
       "sentry:i",
       "error-?boundary:i",
       "logger:i",
       "logging:i",
+
+      // Build tools
       ".swiftpm/:i",
       "Package\\.swift$:i",
-      "project\\.pbxproj$:i"
+      "project\\.pbxproj$:i",
     ],
-    "low": [
+    low: [
+      // Tests
       "\\.test\\.(ts|js|tsx|jsx|rs|cpp|swift|kt)$:i",
       "\\.spec\\.(ts|js|tsx|jsx|rs|cpp|swift|kt)$:i",
       "__tests__/:i",
       "_tests?/:i",
       "/tests?/:i",
+
+      // Documentation
       "\\.md$:i",
       "docs?/:i",
       "readme:i",
@@ -162,13 +141,19 @@
       "changelog:i",
       "license:i",
       "contributing:i",
+
+      // Stories & examples
       "\\.stories\\.(ts|js|tsx|jsx)$:i",
       "\\.example\\.(ts|js|tsx|jsx|rs|cpp|swift|kt)$:i",
       "/examples?/:i",
       "/stories/:i",
+
+      // Mock data
       "/mocks?/:i",
       "/fixtures?/:i",
       "\\.mock\\.(ts|js|tsx|jsx)$:i",
+
+      // Assets (usually versioned separately or not critical)
       "\\.png$:i",
       "\\.jpg$:i",
       "\\.jpeg$:i",
@@ -177,9 +162,10 @@
       "\\.ico$:i",
       "/assets?/:i",
       "/static/:i",
-      "/public/:i"
+      "/public/:i",
     ],
-    "api": [
+    api: [
+      // REST API
       "/api/:i",
       "/routes?/:i",
       "/controllers?/:i",
@@ -187,19 +173,29 @@
       "\\.route\\.(ts|js)$:i",
       "\\.controller\\.(ts|js|kt|swift|rs)$:i",
       "/handlers?/:i",
+
+      // Services layer
       "/services?/:i",
       "\\.service\\.(ts|js|kt|swift|rs)$:i",
+
+      // GraphQL
       "/graphql/:i",
       "\\.resolver\\.(ts|js)$:i",
       "\\.gql$:i",
       "\\.graphql$:i",
       "schema\\.graphql$:i",
+
+      // RPC
       "/trpc/:i",
       "/grpc/:i",
       "\\.proto$:i",
+
+      // Webhooks
       "/webhooks?/:i",
       "webhook:i",
-      "/v\\d+/:i"
-    ]
-  }
+
+      // API versioning
+      "/v\\d+/:i",
+    ],
+  };
 }
