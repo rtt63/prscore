@@ -3,6 +3,28 @@ import { ClaudeAnalysis } from "./claude-client";
 import { SizeAnalysis } from "./size-analyzer";
 import { CategorizedFiles } from "./file-categorizer";
 
+/*
+ * This metric partially relies on DORA research https://www.datadoghq.com/knowledge-center/dora-metrics/
+ * Such metrics probably irrelevant for big companies where you can wait for review for a week. If it's your case you likely don't need this tool at all.
+ *
+ * For the rest:
+ * 0-2 days - great. Context is fresh, perforance is good. PR clearly not abandoned.
+ * 2-3 days - still good, some minor pitalls happen. Maybe testing shows some problems, but overall performance is good.
+ * 3-5 days - it's alive, but likely engineer already switched focus for at least 2-3 times before get back on this. Be careful.
+ * 5-10 days - it took long, might be discussions if this change is really needed. Focus clearly lost.
+ * 10+ days - back from the dead. Be very careful at least becuase there might be a reason why it was dead for a first place.
+ *
+ * */
+const CRITICAL_TIME_SPAN_HOURS = 240;
+function getTimeSpanScore(timeSpanHours: number): number {
+  if (timeSpanHours > CRITICAL_TIME_SPAN_HOURS) return 8.0; // 10+ days
+  if (timeSpanHours > 120) return 6.0; // 5-10 days
+  if (timeSpanHours > 72) return 2.5; // 3-5 days
+  if (timeSpanHours > 48) return 0.7; // 2-3 days
+
+  return 0; // 0-2 days
+}
+
 export interface RiskScore {
   overall: number;
   level: "low" | "medium" | "high" | "critical";
@@ -88,15 +110,7 @@ export function calculateRiskScore(
       ? 0
       : Math.min(10, 5.0 + Math.min(3, configFiles.length * 0.8));
 
-  function getTimeSpanScore() {
-    if (timeSpanHours > 72) return 4.0;
-    if (timeSpanHours > 48) return 3.0;
-    if (timeSpanHours > 24) return 1.5;
-
-    return 0;
-  }
-
-  const timeSpanScore = getTimeSpanScore();
+  const timeSpanScore = getTimeSpanScore(timeSpanHours);
 
   const totalWeight =
     WEIGHTS.PR_SIZE +
@@ -157,9 +171,9 @@ export function calculateRiskScore(
     recommendations.push("Update deployment runbook");
   }
 
-  if (timeSpanHours > 24 * 7) {
+  if (timeSpanHours > CRITICAL_TIME_SPAN_HOURS) {
     recommendations.push(
-      "PR developed over multiple days - extra careful review needed",
+      "PR developed over extended period - extra careful review needed",
     );
     recommendations.push("Verify no merge conflicts or stale code");
   }
