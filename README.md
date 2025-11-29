@@ -2,25 +2,34 @@
 
 Use AI to detect how potentially dangerous is to merge this PR.
 
-Examples
+## Why?
 
-- Big PR
-- Breaking changes or changes in specific files
-- Too much time between first and last commit, which might leed to lost focus
-- Incomplete error handle
+> Is it better than traditional linters/code review approach?
+
+It's a good option for tight, **fast-paced teams** where proper, detailed and qualified code review is a luxury. You still need tests, good typings and skilled engineers.
+
+But **if most of your code reviews are LGTM at best - try this instead.**
+
+## Examples
+
+- Big PRs (too many things at once to keep focus on)
+- Breaking changes or changes in specific files (probably more edge-cases than we thought)
+- Too much time between first and last commit (heuristically, the longer it takes the more focus is shifting towards "just ship it already")
+- Incomplete error handling (The owls are not what they seem)
+- and more
 
 ## Installation
 
 Required Claude API account
 
 1. Add `ANTHROPIC_API_KEY="your-key"` to secrets
-2.
+2. Install dependency
 
 ```bash
 npm install --save-dev prscore
 ```
 
-3. To create your custom config locally
+3. (optional) Create your custom config locally if needed
 
 ```bash
 npm install -g prscore && prscore init
@@ -57,6 +66,7 @@ By default, only users with **write, maintain, or admin** permissions can trigge
    ```
 
 **Example:**
+
 ```
 PRSCORE_TRUSTED_USERS: alice,bob,charlie
 ```
@@ -69,12 +79,12 @@ prscore calculates an overall risk score (0-10) based on:
 
 | Factor           | Weight | What it checks                                     |
 | ---------------- | ------ | -------------------------------------------------- |
-| Breaking Changes | 10     | API changes, removed exports, schema modifications |
-| Fatal Errors     | 9      | Runtime crashes, null errors, white screens        |
+| Breaking Changes | 7      | API changes, removed exports, schema modifications |
+| Fatal Errors     | 10     | Runtime crashes, null errors, white screens        |
 | PR Size          | 8      | Lines changed (>2000 = critical)                   |
 | Migrations       | 7      | Database schema changes                            |
-| Config Changes   | 6      | Environment, Docker, infrastructure files          |
-| Time Span        | 2      | Multi-day PRs (stale code risk)                    |
+| Config Changes   | 5      | Environment, Docker, infrastructure files          |
+| Time Span        | 1      | Multi-day PRs (stale code risk)                    |
 
 **Risk Levels:**
 
