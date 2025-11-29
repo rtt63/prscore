@@ -15,14 +15,14 @@ import { CategorizedFiles } from "./file-categorizer";
  * 10+ days - back from the dead. Be very careful at least becuase there might be a reason why it was dead for a first place.
  *
  * */
-const CRITICAL_TIME_SPAN_HOURS = 240;
+const CRITICAL_TIME_SPAN_HOURS = 24 * 10; // 10+ days
 function getTimeSpanScore(timeSpanHours: number): number {
-  if (timeSpanHours > CRITICAL_TIME_SPAN_HOURS) return 8.0; // 10+ days
-  if (timeSpanHours > 120) return 6.0; // 5-10 days
-  if (timeSpanHours > 72) return 2.5; // 3-5 days
-  if (timeSpanHours > 48) return 0.7; // 2-3 days
+  if (timeSpanHours > CRITICAL_TIME_SPAN_HOURS) return 8.0;
+  if (timeSpanHours > 24 * 5) return 6.0;
+  if (timeSpanHours > 24 * 3) return 2.5;
+  if (timeSpanHours > 24 * 2) return 0.7;
 
-  return 0; // 0-2 days
+  return 0;
 }
 
 export interface RiskScore {
