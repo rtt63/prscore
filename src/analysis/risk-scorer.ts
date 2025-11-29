@@ -8,11 +8,11 @@ import { CategorizedFiles } from "./file-categorizer";
  * Such metrics probably irrelevant for big companies where you can wait for review for a week. If it's your case you likely don't need this tool at all.
  *
  * For the rest:
- * 0-2 days - great. Context is fresh, perforance is good. PR clearly not abandoned.
- * 2-3 days - still good, some minor pitalls happen. Maybe testing shows some problems, but overall performance is good.
- * 3-5 days - it's alive, but likely engineer already switched focus for at least 2-3 times before get back on this. Be careful.
+ * 0-2 days - great. Context is fresh, performance is good. PR clearly not abandoned.
+ * 2-3 days - still good, some minor pitfalls happen. Maybe testing shows some problems, but overall performance is good.
+ * 3-5 days - it's alive, but likely engineer already switched focus at least 2-3 times before getting back on this. Be careful.
  * 5-10 days - it took long, might be discussions if this change is really needed. Focus clearly lost.
- * 10+ days - back from the dead. Be very careful at least becuase there might be a reason why it was dead for a first place.
+ * 10+ days - back from the dead. Be very careful at least because there might be a reason why it was dead in the first place.
  *
  * */
 const CRITICAL_TIME_SPAN_HOURS = 24 * 10; // 10+ days
@@ -25,9 +25,16 @@ function getTimeSpanScore(timeSpanHours: number): number {
   return 0;
 }
 
+export enum RiskLevel {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  CRITICAL = "critical",
+}
+
 export interface RiskScore {
   overall: number;
-  level: "low" | "medium" | "high" | "critical";
+  level: RiskLevel;
   breakdown: {
     prSize: number;
     breakingChanges: number;
@@ -46,13 +53,32 @@ export interface RiskScore {
 }
 
 const WEIGHTS = {
-  BREAKING_CHANGES: 10,
-  PR_SIZE: 10,
-  FATAL_ERRORS: 9,
+  BREAKING_CHANGES: 7,
+  PR_SIZE: 8,
+  FATAL_ERRORS: 10,
   MIGRATIONS: 7,
   CONFIG_CHANGES: 5,
   TIME_SPAN: 1,
 };
+
+const RISK_LEVEL_THRESHOLDS = {
+  CRITICAL: 7.5,
+  HIGH: 5.0,
+  MEDIUM: 3.0,
+};
+
+function getRiskLevel(overallScore: number): RiskLevel {
+  if (overallScore >= RISK_LEVEL_THRESHOLDS.CRITICAL) {
+    return RiskLevel.CRITICAL;
+  }
+  if (overallScore >= RISK_LEVEL_THRESHOLDS.HIGH) {
+    return RiskLevel.HIGH;
+  }
+  if (overallScore >= RISK_LEVEL_THRESHOLDS.MEDIUM) {
+    return RiskLevel.MEDIUM;
+  }
+  return RiskLevel.LOW;
+}
 
 export function calculateRiskScore(
   prDiff: PRDiff,
@@ -129,14 +155,7 @@ export function calculateRiskScore(
     timeSpanScore * WEIGHTS.TIME_SPAN;
 
   const overall = Math.min(10, weightedSum / totalWeight);
-  const level =
-    overall >= 7.5
-      ? "critical"
-      : overall >= 5.0
-        ? "high"
-        : overall >= 3.0
-          ? "medium"
-          : "low";
+  const level = getRiskLevel(overall);
 
   const recommendations: string[] = [];
 
