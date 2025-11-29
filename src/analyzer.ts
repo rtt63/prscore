@@ -10,19 +10,19 @@ export interface AnalyzerOptions {
   anthropicApiKey: string;
 }
 
+const LARGE_PR_THRESHOLD = 2000;
+
 export async function analyzeDeployRisk(
   options: AnalyzerOptions,
 ): Promise<RiskScore> {
   const prDiff = getPRDiff(options.base, options.head);
-
   const categorizedFiles = categorizeFiles(prDiff.files);
-
   const sizeAnalysis = analyzePRSize(prDiff);
 
-  const filesToAnalyze =
-    sizeAnalysis.totalLines > 2000
-      ? categorizedFiles.critical
-      : [...categorizedFiles.critical, ...categorizedFiles.normal];
+  const isLargePR = sizeAnalysis.totalLines > LARGE_PR_THRESHOLD;
+  const filesToAnalyze = isLargePR
+    ? categorizedFiles.critical
+    : [...categorizedFiles.critical, ...categorizedFiles.normal];
 
   const claudeAnalysis = await analyzeWithClaude(
     filesToAnalyze,
