@@ -2,6 +2,9 @@
 
 Use AI to detect how potentially dangerous is to merge this PR.
 
+![Claude API Required](.github/badges/claude-api-required.svg)
+![NPM](.github/badges/npm-node.svg)
+
 ## Why?
 
 > Is it better than traditional linters/code review approach?
